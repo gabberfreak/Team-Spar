@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OOP_Teamwork
+namespace Engine
 {
-    class Program
+    public static class Constants
     {
-        static void Main(string[] args)
-        {
-        }
+        public const int gWidth = 690;
+        public const int gHeight = 590;
+
     }
 }
