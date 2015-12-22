@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Engine.Interfaces;
 
 namespace Engine.Models.PlayerClasses
@@ -14,10 +10,10 @@ namespace Engine.Models.PlayerClasses
         private const int baseAgi = 4;
         private const int baseInt = 3;
         private const int baseSpeed = 3;
-        private Bitmap image;
+        private Image image;
         public Warrior(int x, int y) : base(x, y, baseStr, baseAgi, baseInt, baseSpeed)
         {
-            this.Image = (Bitmap) System.Drawing.Image.FromFile("../../../resources/hero.png");
+            this.Image = (Bitmap) Image.FromFile("../../../resources/MightySword.png");
         }
 
         public override int Damage
@@ -30,14 +26,15 @@ namespace Engine.Models.PlayerClasses
             throw new NotImplementedException();
         }
 
-        public override Bitmap Image
+        public override Image Image
         {
-            get
-            {
-                var cropArea = new Rectangle(310,0,150,310);
-                return this.image.Clone(cropArea, this.image.PixelFormat);
-            }
+            get { return this.image; }
             set { this.image = value; }
         }
-     }
+
+        public override void Render(System.Drawing.Graphics g)
+        {
+            g.FillRectangle(Brushes.Blue, X, Y, Size,Size);
+        }
+    }
 }

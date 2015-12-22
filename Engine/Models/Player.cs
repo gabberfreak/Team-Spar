@@ -9,8 +9,10 @@ namespace Engine.Models
 {
     public abstract class Player : BaseCreature, IFightable
     {
+        private const int size = 50;
+
         protected Player(int x, int y, int strength, int agility, int intelligence,int speed)
-            : base(x, y)
+            : base(x, y,size)
         {
             this.BaseStrength = strength;
             this.BaseAgility = agility;
@@ -30,8 +32,8 @@ namespace Engine.Models
 
         public override void SetTarget(BaseCreature target)
         {
-            
         }
+
         public abstract int Damage { get; }
         public abstract void Attack(IFightable target);
 

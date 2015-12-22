@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Engine.Models;
 
 namespace Engine.Interfaces
 {
@@ -11,5 +6,6 @@ namespace Engine.Interfaces
     {
         bool InBoundsX();
         bool InBoundsY();
+        bool Intersects(BaseObject obj);
     }
 }

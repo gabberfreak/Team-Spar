@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CSharpCanvas, Version=0.1.0.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CSharpCanvas.0.1.0.4\lib\net40\CSharpCanvas.dll</HintPath>
@@ -55,14 +58,23 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Engine.cs" />
+    <Compile Include="Graphics\SuperAdventure.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Graphics\SuperAdventure.Designer.cs">
+      <DependentUpon>SuperAdventure.cs</DependentUpon>
+    </Compile>
     <Compile Include="InputHandler\Input.cs" />
     <Compile Include="Interfaces\ICollidable.cs" />
     <Compile Include="Interfaces\IDrawable.cs" />
     <Compile Include="Interfaces\IFightable.cs" />
     <Compile Include="Interfaces\IMovable.cs" />
     <Compile Include="Models\BaseCreature.cs" />
+    <Compile Include="Models\BaseObject.cs" />
+    <Compile Include="Models\Box.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\Mob.cs" />
+    <Compile Include="Models\MobClasses\Boss.cs" />
     <Compile Include="Models\MobClasses\Zombie.cs" />
     <Compile Include="Models\Player.cs" />
     <Compile Include="Models\PlayerClasses\Warrior.cs" />
@@ -71,7 +83,11 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Graphics\SuperAdventure.resx">
+      <DependentUpon>SuperAdventure.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>

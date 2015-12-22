@@ -16,7 +16,16 @@ namespace SuperAdventure
         public SuperAdventure()
         {
             game = new Engine.Engine();
+            game.Graphics = CreateGraphics();
+
             InitializeComponent();
+            
+            this.SetStyle(
+            ControlStyles.UserPaint |
+            ControlStyles.AllPaintingInWmPaint |
+            ControlStyles.DoubleBuffer, true);
+
+
             game.Start();
             
         }
@@ -32,7 +41,7 @@ namespace SuperAdventure
 
         private void SuperAdventure_Paint(object sender, PaintEventArgs e)
         {
-            game.Graphics = CreateGraphics();
+            game.Render();
         }
 
         private void SuperAdventure_FormClosing(object sender, FormClosingEventArgs e)
@@ -40,5 +49,6 @@ namespace SuperAdventure
             game.Stop();
             Application.Exit();
         }
+
     }
 }

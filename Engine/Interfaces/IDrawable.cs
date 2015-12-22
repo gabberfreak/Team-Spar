@@ -7,7 +7,9 @@ namespace Engine.Interfaces
     {
         int X { get; set; }
         int Y { get; set; }
-        Bitmap Image { get; set; }
+        Rectangle box { get; }
+
+        Image Image { get; set; }
         void Render(Graphics g);
 
     }

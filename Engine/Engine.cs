@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Engine.InputHandler;
 using Engine.Models;
 using Engine.Models.MobClasses;
@@ -12,80 +12,101 @@ namespace Engine
 {
     public class Engine
     {
-        private const int UPDATES_PER_SECOND = 30;
-        private const int WAIT_TICKS = 1000 / UPDATES_PER_SECOND;
-        private const int MAX_FRAMESKIP = 5;
-        private static readonly DateTime Jan1st1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private const int MAX_UPDATES_PER_SECOND = 60;
-        private const int MIN_WAIT_TICKS = 1000 / MAX_UPDATES_PER_SECOND;
+        private const int framerate = 60;
 
-        //private Engine instance;
+        private static int lastTick;
+        private static int lastFrameRate;
+        private static int frameRate;
+
         private bool running = false;
-        private Thread thread;
+        private Task thread;
         private Player player;
         private List<Mob> enemies;
-        private Graphics g;
+        private List<BaseObject> objects;
+        private Box finish;
+        private System.Drawing.Graphics gfx;
 
+        private long fpsStartTime;
+        private long fpsFrameCount;
+       
         public Engine()
         {
         }
 
         private void Init()
         {
-            player = new Warrior(100,280);
-            //enemies = new List<Mob>()
-            //{
-            //    new Zombie(100,122,6),
-            //};
-            this.Input = new Input(player);
+            fpsStartTime = System.Diagnostics.Stopwatch.GetTimestamp();
+            fpsFrameCount = 0;
+            player = new Warrior(250,300);
+            this.Input = new Input(this);
+
+            this.enemies = new List<Mob>()
+            {
+               new Zombie(221,430,6),
+               new Zombie(345,250,11),
+               new Boss(400,400,10)
+            };
+            this.objects = new List<BaseObject>()
+            {
+               player,
+               new Box(60,10),
+               new Box(60,60),
+               new Box(60,110),
+               new Box(60,160),
+               new Box(110,160),
+               new Box(110,270),
+               new Box(10,270),
+               new Box(60,270),
+            };
+            foreach (var enemy in enemies)
+            {
+                objects.Add(enemy);
+            }
+            finish = new Box(10, 10);
+
+            Running = true;
         }
 
         public void Tick()
         {
-            player.Tick();
-            //foreach (var enemy in enemies)
-            //{
-            //    enemy.SetTarget(Player);
-            //    enemy.Tick();
-            //}
+            if (player.box.IntersectsWith(finish.box))
+            {
+                this.running = false;
+                this.Graphics.DrawImage(Image.FromFile("../../../resources/gamewon.png"), 0, 0, Constants.gWidth, Constants.gHeight);
+            }
+            player.Tick(objects);
+            foreach (var enemy in enemies)
+            {
+                if (enemy.Intersects(player))
+                {
+                    this.running = false;
+                    this.Graphics.DrawImage(Image.FromFile("../../../resources/gameover.png"), 0, 0 ,Constants.gWidth, Constants.gHeight);
+                }
+                enemy.SetTarget(player);
+                enemy.Tick(objects);
+            }
         }
 
         public void Render()
         {
-            //this.Graphics.Clear(Color.Black);
-            player.Render(this.Graphics);
-            //foreach (var enemy in enemies)
-            //{
-            //    enemy.Render(this.Graphics);
-            //}
+            gfx.Clear(Color.Green);
+            gfx.FillRectangle(Brushes.DeepSkyBlue, 5,5,50,50);
+            foreach (var creature in objects)
+            {
+                creature.Render(this.Graphics);
+            }
         }
 
         public void Run()
         {
             Init();
-            long next_update = CurrentTimeMillis();
-            int frames_skipped;
-            long last_update = CurrentTimeMillis();
 
             while (running)
             {
-                // Delay if needed
-                while (CurrentTimeMillis() < last_update + MIN_WAIT_TICKS)
-                {
-                    Thread.Sleep(0);
-                }
-                last_update = CurrentTimeMillis();
-                // Update game:
-                frames_skipped = 0;
-                while (CurrentTimeMillis() > next_update && frames_skipped < MAX_FRAMESKIP)
-                {
-                    // Update input, move objects, do collision detection...
-                    // Schedule next update:
-                    Tick();
-                    next_update += WAIT_TICKS;
-                    frames_skipped++;
-                }
-                Render();
+                LimitFrameRate(framerate);
+                Console.WriteLine(CalculateFrameRate());
+                this.Render();
+                this.Tick();
             }
             Stop();
         }
@@ -95,8 +116,7 @@ namespace Engine
             if (!this.running)
             {
                 this.running = true;
-                this.thread = new Thread(new ThreadStart(this.Run));
-                thread.Start();
+                thread = Task.Factory.StartNew(this.Run);
             }
         }
 
@@ -109,17 +129,30 @@ namespace Engine
             this.running = false;
             try
             {
-                thread.Abort();
-                
+                this.Dispose();
+                Application.Exit();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw;
             }
-            
         }
 
-        public bool Running { get { return this.running; } }
+        private void Dispose()
+        {
+            this.gfx.Dispose();
+            thread.Dispose();
+        }
+
+        public bool Running
+        {
+            get
+            {
+                return this.running;
+            }
+            set { this.running = value; }
+        }
+
         public Player Player
         {
             get { return this.player; }
@@ -128,15 +161,10 @@ namespace Engine
         public Input Input{get; private set; }
 
 
-        public static long CurrentTimeMillis()
+        public System.Drawing.Graphics Graphics
         {
-            return (long) (DateTime.UtcNow - Jan1st1970).TotalMilliseconds;
-        }
-
-        public Graphics Graphics
-        {
-            get { return this.g; }
-            set { this.g = value; }
+            get { return this.gfx; }
+            set { this.gfx = value; }
         }
 
         //public Engine Instance
@@ -144,6 +172,36 @@ namespace Engine
         //    get { return this.instance ?? (this.instance = new Engine()); }
         //}
 
+
+        public virtual void LimitFrameRate(int fps)
+        {
+            var freq = System.Diagnostics.Stopwatch.Frequency;
+            var frame = System.Diagnostics.Stopwatch.GetTimestamp();
+            
+            while ((frame - fpsStartTime) * fps < freq * fpsFrameCount)
+            {
+                int sleepTime = (int)((fpsStartTime * fps + freq * fpsFrameCount - frame * fps) * 1000 / (freq * fps));
+                if (sleepTime > 0) System.Threading.Thread.Sleep(sleepTime);
+                frame = System.Diagnostics.Stopwatch.GetTimestamp();
+            }
+            if (++fpsFrameCount > fps)
+            {
+                fpsFrameCount = 0;
+                fpsStartTime = frame;
+            }
+        }
+        public static int CalculateFrameRate()
+        {
+            if (System.Environment.TickCount - lastTick >= 1000)
+            {
+                Console.WriteLine(lastFrameRate);
+                lastFrameRate = frameRate;
+                frameRate = 0;
+                lastTick = System.Environment.TickCount;
+            }
+            frameRate++;
+            return lastFrameRate;
+        }
 
 
     }

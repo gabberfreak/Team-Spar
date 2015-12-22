@@ -1,29 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Engine.Interfaces;
-using SlimDX.Direct3D10;
 
 namespace Engine.Models
 {
-    public abstract class BaseCreature : IMovable, IDrawable
+    public abstract class BaseCreature : BaseObject, IMovable
     {
         //private List<Item> items;
 
-        protected BaseCreature(int x, int y)
+        protected BaseCreature(int x, int y, int size)
+            : base(x, y, size)
         {
-            this.X = x;
-            this.Y = y;
         }
 
-        public int X { get; set; }
-        public int Y { get; set; }
-        public abstract Bitmap Image { get; set; }
         public int XDir { get; set; }
         public int YDir { get; set; }
         public int BaseSpeed { get; set; }
@@ -41,46 +31,36 @@ namespace Engine.Models
         {
             if (InBoundsX())
             {
-                if (XDir != 0)
+                if (XDir != 0 && YDir == 0)
                 {
                     this.X += this.XDir*this.Speed;
                 }
+                else this.X += this.XDir;
             }
-            if(InBoundsY()){
-            if (YDir != 0)
+            if(InBoundsY())
+            {
+                if (YDir != 0 && XDir == 0)
                 {
-                    this.Y += this.YDir * this.Speed;
+                    this.Y += this.YDir*this.Speed;
                 }
+                else this.Y += this.YDir;
             }
         }
 
         public abstract void SetTarget(BaseCreature target);
-        
 
-        public virtual void Tick()
+        public override void Tick(List<BaseObject> creatures)
         {
-            Move();
-        }
-
-        public virtual void Render(Graphics g)
-        {
-            try
+            var collided = creatures.Any(this.Intersects);
+            if (!collided)
             {
-                g.DrawImage(this.Image,new Rectangle(this.X, this.Y, this.Image.Width, this.Image.Height));
+                Move();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
-
-            //var p = new Rectangle(X, Y, 10, 10);
-            //g.DrawRectangle(Pens.Red, p);
-                //FillRectangle(Brushes.Red,p);
         }
 
         public bool InBoundsX()
         {
-            if ((this.X + this.XDir*this.Speed) <= 0 || (this.X + this.Image.Width + this.XDir*this.Speed) >= Constants.gWidth)
+            if ((this.X + this.XDir*this.Speed) <= 0 || (this.X + this.XDir*this.Speed) >= Constants.gWidth)
             {
                 return false;
             }
@@ -89,11 +69,37 @@ namespace Engine.Models
 
         public bool InBoundsY()
         {
-            if ((this.Y + this.YDir * this.Speed) <= 0 || (this.Y + this.Image.Height + this.YDir * this.Speed) >= Constants.gHeight)
+            if ((this.Y + this.YDir * this.Speed) <= 0 || (this.Y + this.YDir * this.Speed) >= Constants.gHeight)
             {
                 return false;
             }
             return true;
+        }
+
+        public bool Intersects(BaseObject obj)
+        {
+            if (this.Equals(obj))
+            {
+                return false;
+            }
+            Rectangle checker = new Rectangle(box.X, box.Y, box.Width,box.Height);
+            if (XDir != 0)
+            {
+                checker.Offset(this.XDir * this.Speed, 0);
+                if (checker.IntersectsWith(obj.box))
+                {
+                    return true;
+                }
+            }
+            if (YDir != 0)
+            {
+                checker.Offset(0, this.YDir * this.Speed);
+                if (checker.IntersectsWith(obj.box))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

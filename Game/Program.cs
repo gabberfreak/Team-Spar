@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Graphics;
 
-namespace SuperAdventureTest
+namespace Game
 {
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
-            var game = new SuperAdventure(new Engine.Engine());
-            Application.Run(game);
+            var engine = new Engine.Engine();
+            var app = new SuperAdventure(engine);
+            Application.Run(app);
         }
     }
 }

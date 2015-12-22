@@ -129,7 +129,6 @@ namespace SuperAdventure
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.SuperAdventure_KeyUp);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion

@@ -8,7 +8,9 @@ namespace Engine
 {
     public static class Constants
     {
-        public const int gWidth = 690;
+        public const int wWidth = 800;
+        public const int wHeight = 600;
+        public const int gWidth = 790;
         public const int gHeight = 590;
 
     }

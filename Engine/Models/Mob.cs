@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Engine.Interfaces;
 
 namespace Engine.Models
 {
-    abstract class Mob : BaseCreature, IFightable
+    public abstract class Mob : BaseCreature, IFightable
     {
-        protected Mob(int x, int y, int strength, int agility, int intelligence, int level, int speed) : base(x, y)
+        protected Mob(int x, int y, int strength, int agility, int intelligence, int level, int speed, int size) : base(x, y, size)
         {
             this.BaseStrength = strength;
             this.BaseAgility = agility;
@@ -19,10 +15,10 @@ namespace Engine.Models
         }
         public override void SetTarget(BaseCreature target)
         {
-            if (this.X < target.X - 10)
+            if (this.X < target.X)
             {
                 this.XDir = 1;
-            }else if (this.X > target.X + 10)
+            }else if (this.X > target.X)
             {
                 this.XDir = -1;
             }
@@ -31,11 +27,11 @@ namespace Engine.Models
                 this.XDir = 0;
             }
 
-            if (this.Y < target.Y - 10)
+            if (this.Y < target.Y)
             {
                 this.YDir = 1;
             }
-            else if (this.Y > target.Y + 10)
+            else if (this.Y > target.Y)
             {
                 this.YDir = -1;
             }
